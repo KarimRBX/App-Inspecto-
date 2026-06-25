@@ -1,12 +1,947 @@
-<!-- Liaison PWA -->
-    <link rel="manifest" href="./manifest.json">
+<!DOCTYPE html>
+<html data-clean-ui="" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Inspecto App V7.1 - SCHS Ergonomie</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');</style>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('Service Worker enregistré avec succès !', reg))
-                    .catch(err => console.log('Échec de l\'enregistrement du Service Worker', err));
-            });
-        }
+        (function() {
+            function setTheme(themeName) {
+                document.documentElement.classList.toggle('dark-mode', themeName === 'dark');
+            }
+            const savedTheme = localStorage.getItem('rsd-theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+        })();
     </script>
+    <style>
+        :root {
+            --primary-hue: 95;
+            --c-primary: hsl(var(--primary-hue), 20%, 45%);
+            --c-primary-light: hsl(var(--primary-hue), 25%, 55%);
+            --c-primary-glow: hsla(var(--primary-hue), 20%, 45%, 0.15);
+            --accent-hue: 45;
+            --danger-hue: 355;
+            --c-accent: hsl(var(--accent-hue), 96%, 55%);
+            --c-success: #28a745;
+            --c-warning: #ffc107;
+            --c-danger: #dc3545;
+            --bg-primary: #F5F5F5;
+            --bg-secondary: #FFFFFF;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --bg-input: #FFFFFF;
+            --bg-item: #F0F0F0;
+            --bg-subtle: #E9E9E9;
+            --text-primary: #000000;
+            --text-secondary: #6c757d;
+            --text-light: #FFFFFF;
+            --border-primary: #dee2e6;
+            --border-secondary: #adb5bd;
+            --border-focus: var(--c-primary);
+            --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+        html.dark-mode {
+            color-scheme: dark;
+            --c-primary: hsl(var(--primary-hue), 30%, 70%);
+            --c-primary-light: hsl(var(--primary-hue), 35%, 80%);
+            --c-primary-glow: hsla(var(--primary-hue), 30%, 70%, 0.15);
+            --c-accent: #FFD700;
+            --c-success: #9eff9e;
+            --c-warning: #ffc266;
+            --c-danger: #ff6b6b;
+            --bg-primary: #121212;
+            --bg-secondary: #1f1f1f;
+            --bg-glass: rgba(31, 31, 31, 0.7);
+            --bg-input: #2a2a2a;
+            --bg-item: #252525;
+            --bg-subtle: #1c1c1c;
+            --text-primary: #f8f9fa;
+            --text-secondary: #CED4DA;
+            --text-light: var(--bg-primary);
+            --border-primary: #3a3a3a;
+            --border-secondary: #555555;
+        }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg-primary); color: var(--text-secondary); transition: background-color 0.4s ease, color 0.4s ease; }
+        .main-layout-container { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1400px; margin: 15px auto; padding: 0 15px; }
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-glass); backdrop-filter: blur(16px); padding: 15px 20px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
+        header h1 { color: var(--c-primary); font-size: 1.4em; margin: 0; font-weight: 800; }
+        .actions-bar { display: flex; gap: 10px; margin-bottom: 15px; background: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); flex-wrap: wrap; align-items: center; }
+        fieldset { background: var(--bg-secondary); padding: 0; margin-bottom: 30px; border: 1px solid var(--border-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
+        legend { font-size: 1.2em; font-weight: 800; color: var(--c-primary); padding: 15px 25px; width: 100%; box-sizing: border-box; background-color: var(--bg-subtle); border-bottom: 1px solid var(--border-primary); }
+        .fieldset-content { padding: 25px; } 
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px){ .form-grid { grid-template-columns: repeat(2, 1fr); } .form-grid-3 { grid-template-columns: repeat(3, 1fr) !important; } .form-grid-4 { grid-template-columns: repeat(4, 1fr) !important; } }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; color: var(--text-primary); }
+        input, select, textarea { width: 100%; box-sizing: border-box; padding: 12px 15px; border: 2px solid var(--border-primary); border-radius: var(--radius-sm); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; }
+        
+        /* CHIPS / SEGMENTS TACTILES */
+        .chips-group { display: flex; flex-wrap: wrap; gap: 8px; background: var(--bg-item); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); }
+        .chip-btn { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-secondary); padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85em; font-weight: 600; transition: all 0.2s; flex-grow: 1; text-align: center; }
+        .chip-btn:hover { border-color: var(--c-primary); }
+        .chip-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
+        
+        /* PLUS / MOINS NUMERIQUE */
+        .numeric-stepper { display: flex; align-items: center; gap: 5px; }
+        .stepper-btn { background: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border-primary); width: 44px; height: 44px; border-radius: var(--radius-sm); font-size: 1.2em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .stepper-btn:active { background: var(--border-secondary); }
+
+        .piece-item { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-left: 6px solid var(--c-primary); margin-bottom: 25px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+        .piece-header { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-subtle); padding: 15px 25px; border-bottom: 1px solid var(--border-primary); gap: 15px; }
+        .piece-details { display: flex; gap: 15px; flex-grow: 1; flex-wrap: wrap; }
+        .piece-badge-count { background: var(--c-danger); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; display: none; }
+        .piece-desordres-section { padding: 25px; }
+        
+        /* CARD DÉSORDRE AVEC RISK-BORDER DYNAMIQUE */
+        .piece-desordre-item { background-color: var(--bg-item); border: 1px solid var(--border-primary); border-left: 5px solid var(--border-secondary); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 20px; transition: border-left-color 0.3s ease; }
+        .desordre-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; }
+        
+        .predefined-suggestions-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--bg-secondary); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); max-height: 200px; overflow-y: auto; }
+        .suggestion-btn { text-align: left; padding: 10px; font-size: 0.85em; background-color: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-primary); border-radius: var(--radius-sm); cursor: pointer; }
+        .legal-reference-badge { font-family: monospace; font-size: 0.85em; background-color: var(--bg-subtle); color: var(--c-danger); padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 5px; }
+        .photo-preview { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 15px; }
+        .photo-item { position: relative; display: flex; flex-direction: column; gap: 8px; width: 120px; }
+        .photo-item img { width: 120px; height: 120px; object-fit: cover; border-radius: var(--radius-sm); }
+        .delete-photo-btn { position: absolute; top: -5px; right: -5px; background: var(--c-danger); color: white; border-radius: 50%; border: none; width: 24px; height: 24px; cursor: pointer; }
+        .button-like { background: var(--c-primary); color: white; padding: 10px 20px; border-radius: var(--radius-sm); font-weight: bold; cursor: pointer; display: inline-block; text-align: center; }
+        .btn-export { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 0.95em; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .btn-export.photo { background: #28a745; }
+        .btn-export.danger { background: var(--c-danger); }
+        .delete-piece-btn, .delete-desordre-btn { background: var(--c-danger); color: white; border: none; padding: 8px 15px; border-radius: var(--radius-sm); cursor: pointer; }
+        .add-piece-btn, .add-piece-desordre-btn { background: transparent; border: 2px dashed var(--border-secondary); color: var(--text-primary); width: 100%; padding: 15px; border-radius: var(--radius-md); font-size: 1em; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        #status-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; padding: 12px 25px; border-radius: var(--radius-sm); z-index: 10000; display: none; font-weight: bold; }
+
+        #output-report-zone { display: none; background: white; color: black; padding: 40px; margin-top: 30px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+        .report-header { border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .report-title { font-size: 2em; font-weight: 800; text-transform: uppercase; margin: 0; color: #111; }
+        .grid-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        .table-report { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .table-report th, .table-report td { border: 1px solid #ddd; padding: 12px; text-align: left; color: black !important; }
+        .table-report th { background-color: #f2f2f2; font-weight: bold; }
+        
+        .photo-grid-print { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 25px; }
+        .photo-card-print { border: 2px solid #ccc; padding: 20px; border-radius: 8px; background: #fff; text-align: left; page-break-inside: avoid; box-sizing: border-box; }
+        .photo-card-print img { max-width: 100%; width: auto; height: 250px; object-fit: contain; display: block; margin: 0 auto 15px auto; border: 1px solid #eee; }
+        .photo-caption-print { font-size: 1.05em; font-style: italic; color: #111; margin-top: 8px; font-weight: 700; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        .photo-desordre-print { font-size: 0.9em; color: #333; margin-top: 8px; white-space: pre-wrap; font-family: inherit; line-height: 1.4; }
+        
+        @media print {
+            body { background: white !important; color: black !important; }
+            .main-layout-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+            header, .actions-bar, #main-form-content, .no-print { display: none !important; }
+            #output-report-zone { display: block !important; padding: 0 !important; border: none !important; box-shadow: none !important; background: transparent !important; }
+            .photo-grid-print { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 20px !important; }
+            .photo-card-print { page-break-inside: avoid !important; border: 1px solid #aaa !important; }
+        }
+    </style>
 </head>
+<body>
+    <div id="status-message"></div>
+
+    <div class="main-layout-container">
+        <header>
+            <div>
+                <h1>Inspecto App V7.1 - SCHS</h1>
+                <span id="save-status-icon" style="color:var(--c-success); font-weight: bold;">✅ Prête</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label for="theme-toggle" style="margin:0;">Mode Sombre</label>
+                <input type="checkbox" id="theme-toggle"/>
+            </div>
+        </header>
+
+        <div class="actions-bar">
+            <button type="button" class="btn-export" id="btn-generate-synth">📄 Fiche Synthèse</button>
+            <button type="button" class="btn-export photo" id="btn-generate-photos">📷 Planche Photos</button>
+            <button type="button" class="btn-export" style="background:#6c757d;" id="btn-back-form">✏️ Retour Saisie</button>
+            
+            <button type="button" class="btn-export" style="background:#4a5568;" id="btn-backup-export" title="Télécharger le fichier de sauvegarde">💾 Sauvegarder dossier JSON</button>
+            <button type="button" class="btn-export" style="background:#718096;" id="btn-backup-trigger">📥 Importer JSON</button>
+            <input type="file" id="file-import-json" accept=".json" style="display:none;"/>
+
+            <button type="button" class="btn-export danger" id="btn-reset-form" style="margin-left: auto;">⚠️ Effacer</button>
+        </div>
+
+        <main id="main-form-content">
+            <form id="inspection-form" novalidate>
+                <fieldset id="dossier-principal">
+                    <legend>Informations Générales de l'Inspection</legend>
+                    <div class="fieldset-content form-grid">
+                        <div>
+                            <label for="ref-dossier">Référence unique du Dossier</label>
+                            <input type="text" id="ref-dossier" required placeholder="Ex: ARS-2026-0041"/>
+                        </div>
+                        <div>
+                            <label for="adresse-logement">Adresse complète du logement</label>
+                            <input type="text" id="adresse-logement" required placeholder="Ex: 45 Rue de l'Alma, Roubaix"/>
+                        </div>
+                        <div>
+                            <label for="nom-inspecteur">Inspecteur assermenté référent</label>
+                            <input type="text" id="nom-inspecteur" placeholder="Ex: SCHS Roubaix"/>
+                        </div>
+                        <div>
+                            <label for="date-visite">Date de l'inspection réglementaire</label>
+                            <input type="date" id="date-visite"/>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset id="donnies-occupant">
+                    <legend>Caractéristiques du Logement &amp; Données Sociales</legend>
+                    <div class="fieldset-content">
+                        
+                        <!-- REFONTE TACTILE CARACTÉRISTIQUES LOGEMENT -->
+                        <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border-primary);">
+                            <div class="form-grid" style="margin-bottom: 15px;">
+                                <div>
+                                    <label>Nombre de pièces</label>
+                                    <div class="numeric-stepper">
+                                        <div class="stepper-btn" onclick="Utils.stepInput('logement-nb-pieces', -1)">-</div>
+                                        <input type="number" id="logement-nb-pieces" min="1" value="1" style="text-align:center; font-weight:bold; font-size:1.1em;"/>
+                                        <div class="stepper-btn" onclick="Utils.stepInput('logement-nb-pieces', 1)">+</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Type de chauffage</label>
+                                    <div class="chips-group" id="group-chauffage" data-value="">
+                                        <div class="chip-btn" data-val="Individuel Gaz">Individuel Gaz</div>
+                                        <div class="chip-btn" data-val="Collectif Gaz">Collectif Gaz</div>
+                                        <div class="chip-btn" data-val="Électrique">Électrique</div>
+                                        <div class="chip-btn" data-val="Pompe à chaleur">PAC</div>
+                                        <div class="chip-btn" data-val="Fioul">Fioul</div>
+                                        <div class="chip-btn" data-val="Bois / Poêle">Bois</div>
+                                        <div class="chip-btn" data-val="Pas de chauffage" style="border-color:var(--c-danger);">Aucun</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div>
+                                    <label>Type d'ECS (Eau Chaude Sanitaire)</label>
+                                    <div class="chips-group" id="group-ecs" data-value="">
+                                        <div class="chip-btn" data-val="Chaudière Gaz">Chaudière Gaz</div>
+                                        <div class="chip-btn" data-val="Ballon électrique (Cumulus)">Cumulus Élec</div>
+                                        <div class="chip-btn" data-val="Chauffe-eau Gaz instantané">Gaz Instantané</div>
+                                        <div class="chip-btn" data-val="Collectif">Collectif</div>
+                                        <div class="chip-btn" data-val="Pas d'eau chaude" style="border-color:var(--c-danger);">Aucune</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Type de radiateurs</label>
+                                    <div class="chips-group" id="group-radiateurs" data-value="">
+                                        <div class="chip-btn" data-val="Eau chaude (Fonte / Acier)">Eau Chaude (Fonte/Acier)</div>
+                                        <div class="chip-btn" data-val="Convecteurs électriques vétustes">Convecteurs Vétustes</div>
+                                        <div class="chip-btn" data-val="Radiateurs électriques à inertie">Inertie Élec</div>
+                                        <div class="chip-btn" data-val="Plancher chauffant">Plancher Chauffant</div>
+                                        <div class="chip-btn" data-val="Aucun radiateur" style="border-color:var(--c-danger);">Aucun</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-bottom: 20px;">
+                            <div>
+                                <label for="nom-occupant">Nom et Prénom de l'occupant</label>
+                                <input type="text" id="nom-occupant" placeholder="Ex: Jean Dupont"/>
+                            </div>
+                            <div>
+                                <label for="date-entree">Date d'entrée dans les lieux</label>
+                                <input type="date" id="date-entree"/>
+                            </div>
+                        </div>
+                        <div class="form-grid form-grid-3" style="margin-bottom: 20px;">
+                            <div>
+                                <label>Nombre d'adulte(s)</label>
+                                <div class="numeric-stepper">
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-adulte', -1)">-</div>
+                                    <input type="number" id="nb-adulte" min="0" value="0" style="text-align:center;"/>
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-adulte', 1)">+</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Nombre d'enfant(s)</label>
+                                <div class="numeric-stepper">
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-enfant', -1)">-</div>
+                                    <input type="number" id="nb-enfant" min="0" value="0" style="text-align:center;"/>
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-enfant', 1)">+</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Dont moins de 6 ans (Risque Plomb)</label>
+                                <div class="numeric-stepper">
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-moins-6ans', -1)">-</div>
+                                    <input type="number" id="nb-moins-6ans" min="0" value="0" style="text-align:center; font-weight:bold; border-color:var(--c-warning);"/>
+                                    <div class="stepper-btn" onclick="Utils.stepInput('nb-moins-6ans', 1)">+</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid form-grid-3">
+                            <div>
+                                <label for="prix-loyer">Montant du loyer (€)</label>
+                                <input type="number" id="prix-loyer" min="0" step="0.01" placeholder="Ex: 550"/>
+                            </div>
+                            <div>
+                                <label for="montant-apl">Montant de l'APL / AL (€)</label>
+                                <input type="number" id="montant-apl" min="0" step="0.01" placeholder="Ex: 250"/>
+                            </div>
+                            <div>
+                                <label for="num-allocataire">Numéro d'allocataire (CAF / MSA)</label>
+                                <input type="text" id="num-allocataire" placeholder="Ex: 1234567"/>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div id="pieces-management-area">
+                    <div class="pieces-container"></div>
+                    <button type="button" class="add-piece-btn">+ Ajouter une pièce ou un local inspecté</button>
+                </div>
+            </form>
+        </main>
+
+        <div id="output-report-zone"></div>
+    </div>
+
+    <template id="template-piece">
+        <div class="piece-item">
+            <div class="piece-header">
+                <div class="piece-details">
+                    <div style="flex-grow:1; min-width: 200px;">
+                        <label>Pièce / Local <span class="piece-badge-count">0</span></label>
+                        <select class="piece-select" required></select>
+                    </div>
+                    <div>
+                        <label>Surface (m²)</label>
+                        <input class="piece-surface" type="number" step="0.1" min="0" style="width:110px; font-weight: bold;"/>
+                    </div>
+                </div>
+                <button type="button" class="delete-piece-btn">Supprimer</button>
+            </div>
+            <div class="piece-desordres-section">
+                <div class="piece-desordres-container"></div>
+                <button type="button" class="add-piece-desordre-btn">+ Relever un désordre dans cette pièce</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-desordre">
+        <div class="piece-desordre-item">
+            <div class="desordre-header">
+                <select class="piece-desordre-type" required></select>
+                <button type="button" class="delete-desordre-btn">✕ Retirer</button>
+            </div>
+            <label>Sélectionnez un manquement (Cadre Réglementaire intégré) :</label>
+            <div class="predefined-suggestions-container"></div>
+            <div>
+                <label>Constat final &amp; Observations complémentaires</label>
+                <textarea class="piece-desordre-desc" placeholder="Observations terrain chiffrées ou détails de localisation..."></textarea>
+            </div>
+            <div style="margin-top:15px;">
+                <label class="button-like">📷 Ajouter des images</label>
+                <input type="file" accept="image/*" multiple style="display:none" class="photo-file-input"/>
+                <div class="photo-preview"></div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        const Config = {
+            pieceOptions: ['Entrée / Couloir', 'Salon / Séjour', 'Cuisine', 'Chambre 1', 'Chambre 2', 'Salle de Bain', 'Cabinet d\'aisances (WC)', 'Cave / Sous-sol', 'Combles / Grenier', 'Cour / Extensions'],
+            
+            // Échelle de criticité pour l'UI dynamique
+            severityColors: {
+                'electricite': '#dc3545', // Rouge
+                'gaz': '#dc3545',
+                'risque_co': '#dc3545',
+                'structure_gros_oeuvre': '#dc3545',
+                'risques_sanitaires_particuliers': '#dc3545',
+                'humidite_moisissures': '#ff9f43', // Orange
+                'aeration': '#ff9f43',
+                'reseaux_assainissement': '#ff9f43',
+                'usage_entretien_nuisibles': '#ff9f43',
+                'default': '#adb5bd' // Gris par défaut
+            },
+
+            desordresData: {
+                'structure_gros_oeuvre': {
+                    title: '🏗️ Structure & Gros œuvre',
+                    items: [
+                        { text: 'Charpente fortement humide, bois tendre, chevrons dégradés (Perte de résistance mécanique).', ref: 'Art. L. 511-1 du CCH / Art. 2-1 du Décret n°2002-120' },
+                        { text: 'Panne intermédiaire dégradée menaçant son ancrage.', ref: 'Art. L. 511-1 du CCH / Art. 2-1 du Décret n°2002-120' },
+                        { text: 'Toiture secondaire affaissée (décrochage charpente).', ref: 'Art. L. 511-2 du CCH' },
+                        { text: 'Plancher de salle de bains menaçant de s’effondrer.', ref: 'Art. L. 511-1 du CCH / Art. 2-3 du Décret n°2002-120' },
+                        { text: 'Baignoire déjà affaissée suite à la ruine de son support de sol.', ref: 'Art. 2-3 du Décret n°2002-120' },
+                        { text: 'Mur de pièce désaffectée présentant de graves faiblesses et menaçant ruine.', ref: 'Art. L. 511-1 du CCH' }
+                    ]
+                },
+                'etancheite_maconnerie': {
+                    title: '🧱 Étanchéité, Toiture & Isolation',
+                    items: [
+                        { text: 'Toitures en mauvais état entraînant des infiltrations multiples.', ref: 'Art. R. 1331-25 du CSP / Art. 2-1 du Décret n°2002-120' },
+                        { text: 'Descentes EP cassées / non raccordées occasionnant des ruissellements sur les structures.', ref: 'Règlement Sanitaire Départemental' },
+                        { text: 'Humidité importante en partie basse due à des remontées capillaires actives.', ref: 'Art. R. 1331-25 du CSP' }
+                    ]
+                },
+                'securite_personnes': {
+                    title: '🚨 Sécurité des personnes & Chutes',
+                    items: [
+                        { text: 'Allèges de fenêtres situées à une hauteur < 90 cm sans élément de retenue.', ref: 'Art. R. 134-57 du CCH / Art. 2-4 du Décret n°2002-120' },
+                        { text: 'Escaliers dangereux : absence de rampe, garde-corps instables.', ref: 'Art. 2-4 du Décret n°2002-120' },
+                        { text: 'Absence de DAAF fonctionnel.', ref: 'Art. L. 129-8 du CCH' }
+                    ]
+                },
+                'habitabilite': {
+                    title: '📐 Aménagement & Habitabilité',
+                    items: [
+                        { text: 'Pièces < 7 m² → non habitables séparément.', ref: 'Art. R. 1331-20 du CSP / Art. 4 du Décret n°2002-120' },
+                        { text: 'Pièces configurées en second jour sans ouvrant direct sur l’extérieur.', ref: 'Art. R. 1331-17 du CSP / Art. 2-7 du Décret n°2002-120' },
+                        { text: 'Hauteur sous plafond < 2,20 m sur l’essentiel du volume habitable.', ref: 'Art. 4 du Décret n°2002-120' }
+                    ]
+                },
+                'aeration': {
+                    title: '💨 Ventilation & Aération',
+                    items: [
+                        { text: 'Absence de dispositif permanent de renouvellement d’air.', ref: 'Art. R. 1331-26 du CSP / Art. 2-6 du Décret du 30/01/2002' },
+                        { text: 'Bouches de VMC défaillantes, sales ou totalement sans tirage.', ref: 'Art. R. 1331-34 du CSP / Arrêté du 24 mars 1982' }
+                    ]
+                },
+                'humidite_moisissures': {
+                    title: '💧 Humidité & Condensation',
+                    items: [
+                        { text: 'Infiltrations multiples identifiées (provenance : toitures, murs, fenêtres).', ref: 'Art. R. 1331-25 du CSP / Art. 2-1 du Décret n°2002-120' },
+                        { text: 'Moisissures nombreuses se développant sur les surfaces.', ref: 'Art. R. 1331-34 du CSP' }
+                    ]
+                },
+                'electricite': {
+                    title: '⚡ Électricité',
+                    items: [
+                        { text: 'Absence totale de dispositif de coupure générale accessible.', ref: 'Art. R. 1331-31 du CSP / NF C 15-100' },
+                        { text: 'Doute sérieux ou défaut manifeste de mise à la terre globale.', ref: 'Art. 2-5 du Décret n°2002-120' },
+                        { text: 'Absence de dispositif différentiel haute sensibilité 30 mA.', ref: 'Art. 2-5 du Décret n°2002-120' },
+                        { text: 'Matériel vétuste, fils sous tension accessibles, dominos nus sans boîtier.', ref: 'Art. R. 1331-31 du CSP' }
+                    ]
+                },
+                'gaz': {
+                    title: '🔥 Gaz',
+                    items: [
+                        { text: 'Tuyau de raccordement de la gazinière échu, périmé ou craquelé.', ref: 'Arrêté Sécurité Gaz' },
+                        { text: 'Risque imminent d’accident ou de fuite caractérisé.', ref: 'Art. L. 511-19 du CCH' }
+                    ]
+                },
+                'chauffage_ecs': {
+                    title: '🌡️ Chauffage & Eau Chaude',
+                    items: [
+                        { text: 'Absence d’un dispositif de chauffage permanent et fixe.', ref: 'Art. 3-1 du Décret n°2002-120' },
+                        { text: 'Température minimale réglementaire de 18°C impossible à atteindre.', ref: 'Art. R. 171-11 du CCH / Art. R. 1331-26 du CSP' }
+                    ]
+                },
+                'risque_co': {
+                    title: '⚠️ Risque Monoxyde de Carbone (CO)',
+                    items: [
+                        { text: 'Absence réglementaire d’amenée d’air comburant dans le local thermique.', ref: 'Arrêté du 23 février 2018' },
+                        { text: 'Conduit de fumées non conforme, dévoyé ou obstrué.', ref: 'Norme DTU 24.1' }
+                    ]
+                },
+                'risques_sanitaires_particuliers': {
+                    title: '☣️ Plomb & Amiante',
+                    items: [
+                        { text: 'Présence de revêtements et peintures écaillés suspectés au plomb.', ref: 'Art. L. 1334-1 du CSP (Risque Saturnisme)' }
+                    ]
+                },
+                'usage_entretien_nuisibles': {
+                    title: '🧹 Incurie, Nuisibles & Syllogomanie',
+                    items: [
+                        { text: 'Encombrement massif et pathologique mettant en péril la salubrité (Diogène).', ref: 'Art. 77 du RSD / Art. R. 1331-41 du CSP' },
+                        { text: 'Prolifération avérée de blattes, punaises de lit ou de rongeurs.', ref: 'Art. R. 1331-45 du CSP' }
+                    ]
+                }
+            }
+        };
+
+        const PhotoStore = new Map();
+
+        const Utils = {
+            stepInput(inputId, amount) {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    let val = parseInt(input.value) || 0;
+                    val = Math.max(parseInt(input.min) || 0, val + amount);
+                    input.value = val;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            },
+            setupChips(groupId) {
+                const group = document.getElementById(groupId);
+                const chips = group.querySelectorAll('.chip-btn');
+                chips.forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        chips.forEach(c => c.classList.remove('active'));
+                        chip.classList.add('active');
+                        group.dataset.value = chip.dataset.val;
+                        State.saveToLocalStorage();
+                    });
+                });
+            },
+            setChipsValue(groupId, val) {
+                const group = document.getElementById(groupId);
+                group.dataset.value = val;
+                const chips = group.querySelectorAll('.chip-btn');
+                chips.forEach(c => {
+                    if (c.dataset.val === val) c.classList.add('active');
+                    else c.classList.remove('active');
+                });
+            }
+        };
+
+        const State = {
+            init() {
+                const toggle = document.getElementById('theme-toggle');
+                toggle.addEventListener('change', (e) => {
+                    document.documentElement.classList.toggle('dark-mode', e.target.checked);
+                    localStorage.setItem('rsd-theme', e.target.checked ? 'dark' : 'light');
+                });
+                
+                Utils.setupChips('group-chauffage');
+                Utils.setupChips('group-ecs');
+                Utils.setupChips('group-radiateurs');
+
+                document.querySelector('.add-piece-btn').addEventListener('click', () => {
+                    UI.addPiece();
+                    State.saveToLocalStorage();
+                });
+                
+                document.getElementById('btn-generate-synth').addEventListener('click', () => Reports.generateFicheSynthese());
+                document.getElementById('btn-generate-photos').addEventListener('click', () => Reports.generatePlanchePhotos());
+                document.getElementById('btn-back-form').addEventListener('click', () => {
+                    document.getElementById('main-form-content').style.display = 'block';
+                    document.getElementById('output-report-zone').style.display = 'none';
+                });
+                
+                document.getElementById('btn-reset-form').addEventListener('click', () => this.resetAllData());
+                
+                // Backup Extrême JSON
+                document.getElementById('btn-backup-export').addEventListener('click', () => Reports.exportBackupJSON());
+                document.getElementById('btn-backup-trigger').addEventListener('click', () => document.getElementById('file-import-json').click());
+                document.getElementById('file-import-json').addEventListener('change', (e) => Reports.importBackupJSON(e));
+
+                document.getElementById('inspection-form').addEventListener('input', () => State.saveToLocalStorage());
+                document.getElementById('inspection-form').addEventListener('change', () => State.saveToLocalStorage());
+
+                if (!this.loadFromLocalStorage()) {
+                    UI.addPiece();
+                }
+            },
+
+            saveToLocalStorage() {
+                const data = Reports.collectData();
+                localStorage.setItem('inspecto_saved_case', JSON.stringify(data));
+                
+                const statusIcon = document.getElementById('save-status-icon');
+                statusIcon.textContent = "⏳ Synchronisation...";
+                statusIcon.style.color = "var(--c-warning)";
+                setTimeout(() => {
+                    statusIcon.textContent = "✅ Enregistré localement";
+                    statusIcon.style.color = "var(--c-success)";
+                }, 400);
+            },
+
+            loadFromLocalStorage() {
+                try {
+                    const raw = localStorage.getItem('inspecto_saved_case');
+                    if (!raw) return false;
+                    this.renderEngine(JSON.parse(raw));
+                    return true;
+                } catch (e) {
+                    console.error("Erreur de rechargement", e);
+                }
+                return false;
+            },
+
+            renderEngine(data) {
+                document.getElementById('ref-dossier').value = data.ref || '';
+                document.getElementById('adresse-logement').value = data.adresse || '';
+                document.getElementById('nom-inspecteur').value = data.inspecteur || '';
+                document.getElementById('date-visite').value = data.date || '';
+
+                document.getElementById('logement-nb-pieces').value = data.nbPiecesLogement || '1';
+                Utils.setChipsValue('group-chauffage', data.chauffageLogement || '');
+                Utils.setChipsValue('group-ecs', data.ecsLogement || '');
+                Utils.setChipsValue('group-radiateurs', data.radiateursLogement || '');
+
+                document.getElementById('nom-occupant').value = data.nomOccupant || '';
+                document.getElementById('date-entree').value = data.dateEntree || '';
+                document.getElementById('nb-adulte').value = data.nbAdulte || '0';
+                document.getElementById('nb-enfant').value = data.nbEnfant || '0';
+                document.getElementById('nb-moins-6ans').value = data.nbMoins6ans || '0';
+                document.getElementById('prix-loyer').value = data.prixLoyer || '';
+                document.getElementById('montant-apl').value = data.montantApl || '';
+                document.getElementById('num-allocataire').value = data.numAllocataire || '';
+
+                const container = document.querySelector('.pieces-container');
+                container.innerHTML = '';
+                
+                if (data.pieces && data.pieces.length > 0) {
+                    data.pieces.forEach(pData => {
+                        const pieceEl = UI.addPiece(pData.nom, pData.surface);
+                        if (pData.desordres) {
+                            pData.desordres.forEach(dData => {
+                                UI.addDesordre(pieceEl, dData);
+                            });
+                        }
+                        UI.updatePieceBadge(pieceEl);
+                    });
+                }
+            },
+
+            resetAllData() {
+                if(confirm("⚠️ Supprimer TOUTES les saisies de ce dossier ?")) {
+                    localStorage.removeItem('inspecto_saved_case');
+                    PhotoStore.forEach(url => URL.revokeObjectURL(url));
+                    PhotoStore.clear();
+                    window.location.reload();
+                }
+            }
+        };
+
+        const UI = {
+            showStatusMessage(msg, type = 'success') {
+                const el = document.getElementById('status-message');
+                el.textContent = msg;
+                el.style.display = 'block';
+                el.style.backgroundColor = type === 'success' ? 'var(--c-success)' : 'var(--c-danger)';
+                setTimeout(() => el.style.display = 'none', 3000);
+            },
+
+            updatePieceBadge(pieceEl) {
+                const count = pieceEl.querySelectorAll('.piece-desordre-item').length;
+                const badge = pieceEl.querySelector('.piece-badge-count');
+                if(count > 0) {
+                    badge.textContent = `${count} manquement${count > 1 ? 's' : ''}`;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            },
+
+            addPiece(selectedNom = '', surfaceVal = '') {
+                const container = document.querySelector('.pieces-container');
+                const clone = document.getElementById('template-piece').content.cloneNode(true);
+                const select = clone.querySelector('.piece-select');
+                
+                Config.pieceOptions.forEach(opt => select.add(new Option(opt, opt)));
+                if(selectedNom) select.value = selectedNom;
+                
+                const surfInput = clone.querySelector('.piece-surface');
+                if(surfaceVal) surfInput.value = surfaceVal;
+
+                const item = clone.querySelector('.piece-item');
+                
+                clone.querySelector('.add-piece-desordre-btn').addEventListener('click', () => {
+                    this.addDesordre(item);
+                    State.saveToLocalStorage();
+                });
+                
+                clone.querySelector('.delete-piece-btn').addEventListener('click', () => {
+                    item.remove();
+                    State.saveToLocalStorage();
+                });
+                
+                container.appendChild(clone);
+                return item;
+            },
+
+            addDesordre(pieceEl, savedDesordreData = null) {
+                const container = pieceEl.querySelector('.piece-desordres-container');
+                const clone = document.getElementById('template-desordre').content.cloneNode(true);
+                const typeSelect = clone.querySelector('.piece-desordre-type');
+                const desordreItem = clone.querySelector('.piece-desordre-item');
+                const textarea = clone.querySelector('.piece-desordre-desc');
+
+                typeSelect.innerHTML = '<option value="">-- Catégorie du manquement --</option>';
+                Object.entries(Config.desordresData).forEach(([key, val]) => typeSelect.add(new Option(val.title, key)));
+
+                if(savedDesordreData) {
+                    typeSelect.value = savedDesordreData.type;
+                    textarea.value = savedDesordreData.texte;
+                    const borderCol = Config.severityColors[savedDesordreData.type] || Config.severityColors['default'];
+                    desordreItem.style.borderLeftColor = borderCol;
+                }
+
+                typeSelect.addEventListener('change', (e) => {
+                    const cKey = e.target.value;
+                    const borderCol = Config.severityColors[cKey] || Config.severityColors['default'];
+                    desordreItem.style.borderLeftColor = borderCol;
+                    this.populateSuggestions(desordreItem, cKey);
+                });
+                
+                clone.querySelector('.delete-desordre-btn').addEventListener('click', () => {
+                    desordreItem.remove();
+                    this.updatePieceBadge(pieceEl);
+                    State.saveToLocalStorage();
+                });
+
+                const photoInput = clone.querySelector('.photo-file-input');
+                clone.querySelector('.button-like').addEventListener('click', () => photoInput.click());
+                
+                const previewContainer = clone.querySelector('.photo-preview');
+                photoInput.addEventListener('change', (e) => this.handlePhotos(e, previewContainer));
+
+                container.appendChild(clone);
+                
+                if(savedDesordreData) {
+                    this.populateSuggestions(desordreItem, savedDesordreData.type);
+                }
+                this.updatePieceBadge(pieceEl);
+                return desordreItem;
+            },
+
+            populateSuggestions(desordreItem, typeKey) {
+                const sugContainer = desordreItem.querySelector('.predefined-suggestions-container');
+                const textarea = desordreItem.querySelector('.piece-desordre-desc');
+                sugContainer.innerHTML = '';
+                if (!typeKey || !Config.desordresData[typeKey]) return;
+
+                Config.desordresData[typeKey].items.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'suggestion-btn';
+                    btn.innerHTML = `<strong>${item.text}</strong> <span class="legal-reference-badge">${item.ref}</span>`;
+                    btn.addEventListener('click', () => {
+                        textarea.value = `[CONSTAT] : ${item.text}\n[FONDEMENT JURIDIQUE] : ${item.ref}\n[OBSERVATIONS SITE] : `;
+                        textarea.focus();
+                        State.saveToLocalStorage();
+                        UI.showStatusMessage("Base réglementaire ancrée.");
+                    });
+                    sugContainer.appendChild(btn);
+                });
+            },
+
+            handlePhotos(e, previewContainer) {
+                const uniqueIdBase = Date.now();
+                Array.from(e.target.files || []).forEach((file, index) => {
+                    const blobUrl = URL.createObjectURL(file);
+                    const photoKey = `${uniqueIdBase}-${index}`;
+                    
+                    PhotoStore.set(photoKey, blobUrl);
+
+                    const div = document.createElement('div');
+                    div.className = 'photo-item';
+                    div.dataset.photoKey = photoKey;
+                    div.innerHTML = `
+                        <img src="${blobUrl}" class="stored-img">
+                        <input type="text" class="photo-caption-input" placeholder="Légende constat">
+                        <button type="button" class="delete-photo-btn">✕</button>
+                    `;
+                    
+                    div.querySelector('.delete-photo-btn').addEventListener('click', () => {
+                        div.remove();
+                        PhotoStore.delete(photoKey);
+                        URL.revokeObjectURL(blobUrl);
+                    });
+                    
+                    previewContainer.appendChild(div);
+                });
+            }
+        };
+
+        const Reports = {
+            collectData() {
+                const data = {
+                    ref: document.getElementById('ref-dossier').value || '',
+                    adresse: document.getElementById('adresse-logement').value || '',
+                    inspecteur: document.getElementById('nom-inspecteur').value || '',
+                    date: document.getElementById('date-visite').value || '',
+                    
+                    nbPiecesLogement: document.getElementById('logement-nb-pieces').value || '1',
+                    chauffageLogement: document.getElementById('group-chauffage').dataset.value || '',
+                    ecsLogement: document.getElementById('group-ecs').dataset.value || '',
+                    radiateursLogement: document.getElementById('group-radiateurs').dataset.value || '',
+
+                    nomOccupant: document.getElementById('nom-occupant').value || '',
+                    dateEntree: document.getElementById('date-entree').value || '',
+                    nbAdulte: document.getElementById('nb-adulte').value || '0',
+                    nbEnfant: document.getElementById('nb-enfant').value || '0',
+                    nbMoins6ans: document.getElementById('nb-moins-6ans').value || '0',
+                    prixLoyer: document.getElementById('prix-loyer').value || '',
+                    montantApl: document.getElementById('montant-apl').value || '',
+                    numAllocataire: document.getElementById('num-allocataire').value || '',
+                    
+                    pieces: []
+                };
+
+                document.querySelectorAll('.piece-item').forEach(pEl => {
+                    const piece = {
+                        nom: pEl.querySelector('.piece-select').value,
+                        surface: pEl.querySelector('.piece-surface').value || '',
+                        desordres: []
+                    };
+
+                    pEl.querySelectorAll('.piece-desordre-item').forEach(dEl => {
+                        const photos = [];
+                        dEl.querySelectorAll('.photo-item').forEach(p => {
+                            const pKey = p.dataset.photoKey;
+                            photos.push({
+                                key: pKey,
+                                caption: p.querySelector('.photo-caption-input').value || 'Vue du constat'
+                            });
+                        });
+
+                        piece.desordres.push({
+                            type: dEl.querySelector('.piece-desordre-type').value,
+                            texte: dEl.querySelector('.piece-desordre-desc').value || '',
+                            photos: photos
+                        });
+                    });
+                    data.pieces.push(piece);
+                });
+                return data;
+            },
+
+            exportBackupJSON() {
+                const data = this.collectData();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `INSPECTO_DOSSIER_${data.ref || 'SANS_REF'}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                UI.showStatusMessage("Fichier JSON de sauvegarde téléchargé !");
+            },
+
+            importBackupJSON(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.target.result);
+                        State.renderEngine(data);
+                        State.saveToLocalStorage();
+                        UI.showStatusMessage("Dossier JSON restauré avec succès !");
+                    } catch(err) {
+                        alert("Erreur de lecture du fichier JSON.");
+                    }
+                };
+                reader.readAsText(file);
+            },
+
+            generateFicheSynthese() {
+                const data = this.collectData();
+                const output = document.getElementById('output-report-zone');
+                let totalDesordres = 0;
+                let tableRows = '';
+                
+                data.pieces.forEach(p => {
+                    p.desordres.forEach(d => {
+                        totalDesordres++;
+                        const rubTitle = Config.desordresData[d.type] ? Config.desordresData[d.type].title : (d.type || 'Inconnu');
+                        tableRows += `
+                            <tr>
+                                <td><strong>${p.nom || 'Non spécifié'}</strong> ${p.surface ? `(${p.surface} m²)` : ''}</td>
+                                <td><span style="color:#dc3545; font-weight:bold;">${rubTitle}</span></td>
+                                <td style="white-space: pre-wrap; color: black;">${d.texte || 'Aucun descriptif renseigné.'}</td>
+                            </tr>`;
+                    });
+                });
+
+                const conclusion = totalDesordres > 0 
+                    ? `⚠️ Présence de ${totalDesordres} manquement(s) réglementaire(s). Procédure SCHS requise.`
+                    : `✅ Habitation saine. Aucun manquement technique majeur relevé.`;
+
+                output.innerHTML = `
+                    <div class="report-header">
+                        <h2 class="report-title">Fiche de Synthèse Réglementaire</h2>
+                        <p style="margin:5px 0 0 0; font-weight:600; color:#555;">Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div class="grid-summary">
+                        <div>
+                            <strong>N° Dossier :</strong> ${data.ref || 'Non renseigné'}<br>
+                            <strong>Logement :</strong> ${data.adresse || 'Non renseigné'}<br>
+                            <strong>Service :</strong> ${data.inspecteur || 'Non renseigné'}<br>
+                            <strong>Date Visite :</strong> ${data.date ? new Date(data.date).toLocaleDateString('fr-FR') : 'Non spécifiée'}<br><br>
+                            <span style="color:var(--c-primary); font-weight:bold; text-decoration: underline;">Fiche Technique Logement :</span><br>
+                            <strong>Nb de pièces :</strong> ${data.nbPiecesLogement}<br>
+                            <strong>Chauffage :</strong> ${data.chauffageLogement || 'Non renseigné'}<br>
+                            <strong>Eau chaude (ECS) :</strong> ${data.ecsLogement || 'Non renseigné'}<br>
+                            <strong>Radiateurs :</strong> ${data.radiateursLogement || 'Non renseigné'}
+                        </div>
+                        <div>
+                            <strong>Occupant :</strong> ${data.nomOccupant || 'Non renseigné'}<br>
+                            <strong>Entrée :</strong> ${data.dateEntree ? new Date(data.dateEntree).toLocaleDateString('fr-FR') : 'Non spécifiée'}<br>
+                            <strong>Composition :</strong> ${data.nbAdulte} Adulte(s) — ${data.nbEnfant} Enfant(s) <em>(Moins de 6 ans : ${data.nbMoins6ans})</em><br><br>
+                            <strong>Financier :</strong> Loyer : ${data.prixLoyer ? data.prixLoyer + ' €' : '-'} — APL : ${data.montantApl ? data.montantApl + ' €' : '-'} ${data.numAllocataire ? `(CAF: ${data.numAllocataire})` : ''}
+                        </div>
+                    </div>
+                    <h3 style="border-bottom:2px solid #333; padding-bottom:5px; color: black;">Détail des Non-Conformités</h3>
+                    <table class="table-report">
+                        <thead>
+                            <tr>
+                                <th style="width:25%">Localisation</th>
+                                <th style="width:30%">Catégorie de Manquement</th>
+                                <th style="width:45%">Constatations Terrain & Normes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows || '<tr><td colspan="3" style="text-align:center; font-style:italic;">Aucun désordre enregistré.</td></tr>'}
+                        </tbody>
+                    </table>
+                    <div style="background:#fff3cd; border-left:6px solid #ffc107; padding:20px; border-radius:4px; font-weight:bold; font-size:1.1em; color:#000;">
+                        <strong>CONCLUSIONS DU LOGEMENT :</strong><br>${conclusion}
+                    </div>
+                    <button class="btn-export no-print" style="margin-top:20px; background:#333;" onclick="window.print()">🖨️ Imprimer le Rapport</button>
+                `;
+                
+                document.getElementById('main-form-content').style.display = 'none';
+                output.style.display = 'block';
+                window.scrollTo(0,0);
+            },
+
+            generatePlanchePhotos() {
+                const data = this.collectData();
+                const output = document.getElementById('output-report-zone');
+                let cardsHtml = '';
+                let hasPhotos = false;
+
+                data.pieces.forEach(p => {
+                    p.desordres.forEach(d => {
+                        const rubTitle = Config.desordresData[d.type] ? Config.desordresData[d.type].title : 'Manquement';
+                        d.photos.forEach(ph => {
+                            const realBlobUrl = PhotoStore.get(ph.key);
+                            if (realBlobUrl) {
+                                hasPhotos = true;
+                                cardsHtml += `
+                                    <div class="photo-card-print">
+                                        <img src="${realBlobUrl}" alt="Manquement">
+                                        <div class="photo-caption-print">📍 Pièce : ${p.nom} ${p.surface ? `(${p.surface} m²)` : ''}</div>
+                                        <div style="font-size:0.95em; color:#dc3545; margin-top:5px; font-weight:700;">Catégorie : ${rubTitle}</div>
+                                        <div style="font-size:0.95em; color:#111; margin-top:2px; font-weight:bold;">📷 Cliché : ${ph.caption}</div>
+                                        <div class="photo-desordre-print"><strong>Constat littéral associé :</strong>\n${d.texte || 'Aucun descriptif fourni.'}</div>
+                                    </div>`;
+                            }
+                        });
+                    });
+                });
+
+                output.innerHTML = `
+                    <div class="report-header">
+                        <h2 class="report-title">Planche Photographique Annexée</h2>
+                        <p style="margin:5px 0 0 0; font-weight:600; color:#555;">Dossier : ${data.ref || 'Sans Réf'} — Adresse : ${data.adresse || 'Non spécifiée'}</p>
+                    </div>
+                    ${hasPhotos ? `<div class="photo-grid-print">${cardsHtml}</div>` : `<p style="text-align:center; font-style:italic; padding:40px;">Aucune photo n'est présente dans ce dossier.</p>`}
+                    <button class="btn-export photo no-print" style="margin-top:30px;" onclick="window.print()">🖨️ Imprimer la Planche</button>
+                `;
+
+                document.getElementById('main-form-content').style.display = 'none';
+                output.style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => State.init());
+    </script>
+</body>
+</html>
