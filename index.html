@@ -5,6 +5,10 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Inspecto App V7.5 - SCHS &amp; Gestion Photos</title>
     <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');</style>
+    
+    <!-- Intégration du Favicon (Icône de l'onglet du navigateur) -->
+    <link rel="icon" href="Gemini_Generated_Image_xcn07xxcn07xxcn0.ico" type="image/x-icon">
+    
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
     <script>
@@ -69,6 +73,8 @@
         body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg-primary); color: var(--text-secondary); transition: background-color 0.4s ease, color 0.4s ease; }
         .main-layout-container { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1400px; margin: 15px auto; padding: 0 15px; }
         header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-glass); backdrop-filter: blur(16px); padding: 15px 20px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
+        .header-title-block { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 38px; height: 38px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         header h1 { color: var(--c-primary); font-size: 1.4em; margin: 0; font-weight: 800; }
         .actions-bar { display: flex; gap: 10px; margin-bottom: 15px; background: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); flex-wrap: wrap; align-items: center; }
         fieldset { background: var(--bg-secondary); padding: 0; margin-bottom: 30px; border: 1px solid var(--border-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
@@ -140,9 +146,13 @@
 
     <div class="main-layout-container">
         <header>
-            <div>
-                <h1>Inspecto App V7.5 - SCHS</h1>
-                <span id="save-status-icon" style="color:var(--c-success); font-weight: bold;">✅ Prête</span>
+            <div class="header-title-block">
+                <!-- Ajout du logo dans la barre de titre de l'application -->
+                <img src="Gemini_Generated_Image_xcn07xxcn07xxcn0.ico" alt="Logo Inspecto" class="header-logo">
+                <div>
+                    <h1>Inspecto App V7.5 - SCHS</h1>
+                    <span id="save-status-icon" style="color:var(--c-success); font-weight: bold;">✅ Prête</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <label for="theme-toggle" style="margin:0;">Mode Sombre</label>
@@ -163,7 +173,7 @@
             <button type="button" class="btn-export danger" id="btn-reset-form" style="margin-left: auto;">⚠️ Effacer</button>
         </div>
 
-        <main id="main-form-content">
+        <div id="main-form-content">
             <form id="inspection-form" novalidate>
                 <fieldset id="dossier-principal">
                     <legend>Informations Générales de l'Inspection</legend>
@@ -295,7 +305,7 @@
                     <button type="button" class="add-piece-btn">+ Ajouter une pièce ou un local inspecté</button>
                 </div>
             </form>
-        </main>
+        </div>
 
         <div id="output-report-zone"></div>
     </div>
