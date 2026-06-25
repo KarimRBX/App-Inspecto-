@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Inspecto App V7.1 - SCHS Ergonomie</title>
-    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');</style>
+    <title>Inspecto App V7.2 - SCHS Ergonomie</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap');</style>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
     <script>
@@ -79,9 +79,9 @@
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; color: var(--text-primary); }
         input, select, textarea { width: 100%; box-sizing: border-box; padding: 12px 15px; border: 2px solid var(--border-primary); border-radius: var(--radius-sm); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; }
         
-        /* CHIPS / SEGMENTS TACTILES */
+        /* CHIPS / SEGMENTS TACTILES MULTIPLES */
         .chips-group { display: flex; flex-wrap: wrap; gap: 8px; background: var(--bg-item); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); }
-        .chip-btn { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-secondary); padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85em; font-weight: 600; transition: all 0.2s; flex-grow: 1; text-align: center; }
+        .chip-btn { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-secondary); padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85em; font-weight: 600; transition: all 0.2s; flex-grow: 1; text-align: center; user-select: none; }
         .chip-btn:hover { border-color: var(--c-primary); }
         .chip-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
         
@@ -145,7 +145,7 @@
     <div class="main-layout-container">
         <header>
             <div>
-                <h1>Inspecto App V7.1 - SCHS</h1>
+                <h1>Inspecto App V7.2 - SCHS</h1>
                 <span id="save-status-icon" style="color:var(--c-success); font-weight: bold;">✅ Prête</span>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -194,7 +194,7 @@
                     <legend>Caractéristiques du Logement &amp; Données Sociales</legend>
                     <div class="fieldset-content">
                         
-                        <!-- REFONTE TACTILE CARACTÉRISTIQUES LOGEMENT -->
+                        <!-- RENDER CHOIX MULTIPLES SUR CARACTÉRISTIQUES (EX: MIXTE GAZ/ÉLEC) -->
                         <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border-primary);">
                             <div class="form-grid" style="margin-bottom: 15px;">
                                 <div>
@@ -206,7 +206,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label>Type de chauffage</label>
+                                    <label>Type de chauffage (Sélection multiple possible)</label>
                                     <div class="chips-group" id="group-chauffage" data-value="">
                                         <div class="chip-btn" data-val="Individuel Gaz">Individuel Gaz</div>
                                         <div class="chip-btn" data-val="Collectif Gaz">Collectif Gaz</div>
@@ -220,7 +220,7 @@
                             </div>
                             <div class="form-grid">
                                 <div>
-                                    <label>Type d'ECS (Eau Chaude Sanitaire)</label>
+                                    <label>Type d'ECS (Eau Chaude Sanitaire - Sélection multiple possible)</label>
                                     <div class="chips-group" id="group-ecs" data-value="">
                                         <div class="chip-btn" data-val="Chaudière Gaz">Chaudière Gaz</div>
                                         <div class="chip-btn" data-val="Ballon électrique (Cumulus)">Cumulus Élec</div>
@@ -230,9 +230,9 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label>Type de radiateurs</label>
+                                    <label>Type de radiateurs (Sélection multiple possible)</label>
                                     <div class="chips-group" id="group-radiateurs" data-value="">
-                                        <div class="chip-btn" data-val="Eau chaude (Fonte / Acier)">Eau Chaude (Fonte/Acier)</div>
+                                        <div class="chip-btn" data-val="Eau chaude (Fonte / Acier)">Eau Chaude</div>
                                         <div class="chip-btn" data-val="Convecteurs électriques vétustes">Convecteurs Vétustes</div>
                                         <div class="chip-btn" data-val="Radiateurs électriques à inertie">Inertie Élec</div>
                                         <div class="chip-btn" data-val="Plancher chauffant">Plancher Chauffant</div>
@@ -333,16 +333,22 @@
                 <select class="piece-desordre-type" required></select>
                 <button type="button" class="delete-desordre-btn">✕ Retirer</button>
             </div>
-            <label>Sélectionnez un manquement (Cadre Réglementaire intégré) :</label>
+            <label>Sélectionnez vos manquements (Choix multiples cumulables) :</label>
             <div class="predefined-suggestions-container"></div>
             <div>
                 <label>Constat final &amp; Observations complémentaires</label>
                 <textarea class="piece-desordre-desc" placeholder="Observations terrain chiffrées ou détails de localisation..."></textarea>
             </div>
-            <div style="margin-top:15px;">
-                <label class="button-like">📷 Ajouter des images</label>
-                <input type="file" accept="image/*" multiple style="display:none" class="photo-file-input"/>
-                <div class="photo-preview"></div>
+            <div style="margin-top:15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <div>
+                    <label class="button-like" style="background:#28a745;">📸 Prendre une Photo Directe</label>
+                    <input type="file" accept="image/*" capture="environment" style="display:none" class="photo-file-capture-input"/>
+                </div>
+                <div>
+                    <label class="button-like" style="background:var(--c-primary);">📁 Importer Galerie</label>
+                    <input type="file" accept="image/*" multiple style="display:none" class="photo-file-input"/>
+                </div>
+                <div class="photo-preview" style="width: 100%;"></div>
             </div>
         </div>
     </template>
@@ -351,18 +357,17 @@
         const Config = {
             pieceOptions: ['Entrée / Couloir', 'Salon / Séjour', 'Cuisine', 'Chambre 1', 'Chambre 2', 'Salle de Bain', 'Cabinet d\'aisances (WC)', 'Cave / Sous-sol', 'Combles / Grenier', 'Cour / Extensions'],
             
-            // Échelle de criticité pour l'UI dynamique
             severityColors: {
-                'electricite': '#dc3545', // Rouge
+                'electricite': '#dc3545',
                 'gaz': '#dc3545',
                 'risque_co': '#dc3545',
                 'structure_gros_oeuvre': '#dc3545',
                 'risques_sanitaires_particuliers': '#dc3545',
-                'humidite_moisissures': '#ff9f43', // Orange
+                'humidite_moisissures': '#ff9f43',
                 'aeration': '#ff9f43',
                 'reseaux_assainissement': '#ff9f43',
                 'usage_entretien_nuisibles': '#ff9f43',
-                'default': '#adb5bd' // Gris par défaut
+                'default': '#adb5bd'
             },
 
             desordresData: {
@@ -473,24 +478,34 @@
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             },
+            // REFONTE : Logique Multi-sélection sous forme de tableau de chaînes jointes par virgule
             setupChips(groupId) {
                 const group = document.getElementById(groupId);
                 const chips = group.querySelectorAll('.chip-btn');
                 chips.forEach(chip => {
                     chip.addEventListener('click', () => {
-                        chips.forEach(c => c.classList.remove('active'));
-                        chip.classList.add('active');
-                        group.dataset.value = chip.dataset.val;
+                        chip.classList.toggle('active');
+                        
+                        // Collecte toutes les valeurs actives
+                        const activeVals = [];
+                        group.querySelectorAll('.chip-btn.active').forEach(c => {
+                            activeVals.push(c.dataset.val);
+                        });
+                        
+                        group.dataset.value = activeVals.join(', ');
                         State.saveToLocalStorage();
                     });
                 });
             },
-            setChipsValue(groupId, val) {
+            setChipsValue(groupId, compositeVal) {
                 const group = document.getElementById(groupId);
-                group.dataset.value = val;
+                group.dataset.value = compositeVal;
                 const chips = group.querySelectorAll('.chip-btn');
+                
+                // Découpe les valeurs sauvegardées pour ré-allumer les bons segments
+                const targets = compositeVal ? compositeVal.split(', ').map(s => s.trim()) : [];
                 chips.forEach(c => {
-                    if (c.dataset.val === val) c.classList.add('active');
+                    if (targets.includes(c.dataset.val)) c.classList.add('active');
                     else c.classList.remove('active');
                 });
             }
@@ -522,7 +537,6 @@
                 
                 document.getElementById('btn-reset-form').addEventListener('click', () => this.resetAllData());
                 
-                // Backup Extrême JSON
                 document.getElementById('btn-backup-export').addEventListener('click', () => Reports.exportBackupJSON());
                 document.getElementById('btn-backup-trigger').addEventListener('click', () => document.getElementById('file-import-json').click());
                 document.getElementById('file-import-json').addEventListener('change', (e) => Reports.importBackupJSON(e));
@@ -684,10 +698,14 @@
                 });
 
                 const photoInput = clone.querySelector('.photo-file-input');
-                clone.querySelector('.button-like').addEventListener('click', () => photoInput.click());
+                clone.querySelectorAll('.button-like')[1].addEventListener('click', () => photoInput.click());
+                
+                const captureInput = clone.querySelector('.photo-file-capture-input');
+                clone.querySelectorAll('.button-like')[0].addEventListener('click', () => captureInput.click());
                 
                 const previewContainer = clone.querySelector('.photo-preview');
                 photoInput.addEventListener('change', (e) => this.handlePhotos(e, previewContainer));
+                captureInput.addEventListener('change', (e) => this.handlePhotos(e, previewContainer));
 
                 container.appendChild(clone);
                 
@@ -710,10 +728,15 @@
                     btn.className = 'suggestion-btn';
                     btn.innerHTML = `<strong>${item.text}</strong> <span class="legal-reference-badge">${item.ref}</span>`;
                     btn.addEventListener('click', () => {
-                        textarea.value = `[CONSTAT] : ${item.text}\n[FONDEMENT JURIDIQUE] : ${item.ref}\n[OBSERVATIONS SITE] : `;
+                        const newBlock = `[CONSTAT] : ${item.text}\n[FONDEMENT JURIDIQUE] : ${item.ref}\n[OBSERVATIONS SITE] : \n`;
+                        if (textarea.value.trim() === "") {
+                            textarea.value = newBlock;
+                        } else {
+                            textarea.value += `\n----------------------------------------\n${newBlock}`;
+                        }
                         textarea.focus();
                         State.saveToLocalStorage();
-                        UI.showStatusMessage("Base réglementaire ancrée.");
+                        UI.showStatusMessage("Manquement ajouté (Choix multiple).");
                     });
                     sugContainer.appendChild(btn);
                 });
@@ -865,9 +888,9 @@
                             <strong>Date Visite :</strong> ${data.date ? new Date(data.date).toLocaleDateString('fr-FR') : 'Non spécifiée'}<br><br>
                             <span style="color:var(--c-primary); font-weight:bold; text-decoration: underline;">Fiche Technique Logement :</span><br>
                             <strong>Nb de pièces :</strong> ${data.nbPiecesLogement}<br>
-                            <strong>Chauffage :</strong> ${data.chauffageLogement || 'Non renseigné'}<br>
-                            <strong>Eau chaude (ECS) :</strong> ${data.ecsLogement || 'Non renseigné'}<br>
-                            <strong>Radiateurs :</strong> ${data.radiateursLogement || 'Non renseigné'}
+                            <strong>Chauffage :</strong> ${data.chauffageLogement || 'Aucun ou non renseigné'}<br>
+                            <strong>Eau chaude (ECS) :</strong> ${data.ecsLogement || 'Aucune ou non renseignée'}<br>
+                            <strong>Radiateurs :</strong> ${data.radiateursLogement || 'Aucun ou non renseigné'}
                         </div>
                         <div>
                             <strong>Occupant :</strong> ${data.nomOccupant || 'Non renseigné'}<br>
